@@ -6,6 +6,7 @@ import numpy as np
 import base64
 import os,sys,shutil
 import time
+import traceback
 
 if __name__ == "__main__":
 
@@ -36,6 +37,9 @@ if __name__ == "__main__":
     with open(result_dir+'images_result.txt','w') as f_o:
         with open(result_dir+'images_list.txt') as f_i:
             for img in f_i:
+                redo_list = ['9310115007_i_1.jpg','4403033891_i_2.png','9110106258_e.png']
+                if img.strip() not in redo_list:
+                    continue
                 if img.find('.jpeg') < 0 and img.find('.jpg') < 0 and img.find('.png') < 0:
                     continue 
                 img_name=img.strip()
@@ -52,11 +56,11 @@ if __name__ == "__main__":
                     success_cnt+=1
                     print('Success: ', success_cnt, img_name)
                 else:
-                    f_fail.write(img_name+'\n')
+                    f_fail.write(img_name+':'+str(skeleton_string)+'\n')
                     failure_cnt+=1
                     print('Failure: ', failure_cnt, img_name)
                 total_cnt+=1
 
-                time.sleep(0.5)
+                time.sleep(0.7)
 
     print('Total: ', total_cnt)

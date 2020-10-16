@@ -65,41 +65,54 @@ def parse(frame, frameCopy, img_path):
     image= getContent(img_path)  
     options = {}
     options["face_field"] = "expression,landmark150,emotion,rotation,angle,yaw"
-    options["max_face_num"] = 1  
-    content=client.detect(image,imageType,options)
+    options["max_face_num"] = 1
+    content = ''
     points=[]
-    if content:
-        data=content
-        result=data['result']
-        face=result['face_list'][0]
-        angle=face['angle']['yaw']
-        #三维旋转之左右旋转角[-90(左), 90(右)]
-        expression=face['expression']['type']
-        #expression_level=face['expression']['probability']
-        #angry:愤怒 disgust:厌恶 fear:恐惧 happy:高兴 sad:伤心 surprise:惊讶 neutral:无情绪
-        emotion=face['emotion']['type']
-        #emotion_level=face['emotion']['probability']
-        if float(angle) < -10:
-            res_string+=' 左偏'+str(angle)+'度'
-        elif float(angle) > 10:
-            res_string+=' 右偏'+str(angle)+'度'
-        else:
-            res_string+=' 无偏移'
-        res_string+=' '+expression+' '+emotion
-        cnt_part=1
-        for point in face['landmark150']:
-            #print(point)
-            value=face['landmark150'][point]
-            pin=(int(value['x']),int(value['y']))
-            points.append(pin)
-            cnt_part+=1
+    status = 'success'
+    status_desc = ''
+
+    try:
+
+        content=client.detect(image,imageType,options)
+
+
+        if content:
+           data=content
+           result=data['result']
+           face=result['face_list'][0]
+           angle=face['angle']['yaw']
+           #三维旋转之左右旋转角[-90(左), 90(右)]
+           expression=face['expression']['type']
+           #expression_level=face['expression']['probability']
+           #angry:愤怒 disgust:厌恶 fear:恐惧 happy:高兴 sad:伤心 surprise:惊讶 neutral:无情绪
+           emotion=face['emotion']['type']
+           #emotion_level=face['emotion']['probability']
+           if float(angle) < -10:
+               res_string+=' 左偏'+str(angle)+'度'
+           elif float(angle) > 10:
+               res_string+=' 右偏'+str(angle)+'度'
+           else:
+               res_string+=' 无偏移'
+           res_string+=' '+expression+' '+emotion
+           cnt_part=1
+           for point in face['landmark150']:
+               #print(point)
+               value=face['landmark150'][point]
+               pin=(int(value['x']),int(value['y']))
+               points.append(pin)
+               cnt_part+=1
+
     
-    res,frame=drawSkeleton(points, frame, (0, 0, 255))
-    skeleton_str=getSkeletonStr(points)
-    #cv2.imshow('d',frame)
-    #cv2.waitKey(0)
-    res_string+=' '+str(np.around(res, decimals=2))
-    return frame, res_string, skeleton_str
+        res,frame=drawSkeleton(points, frame, (0, 0, 255))
+        skeleton_str=getSkeletonStr(points)
+        res_string+=' '+str(np.around(res, decimals=2))
+        return status, status_desc, frame, res_string, skeleton_str
+
+    except Exception as e:
+        if content=='':
+            content = str(repr(e))
+        return 'error',content,'','',''
+
 
 
 def parseImage(img_dir, img_name, result_dir):
@@ -108,19 +121,15 @@ def parseImage(img_dir, img_name, result_dir):
     res_string=str(img_name)
     skeleton_string=str(img_name)
     img_path=os.path.join(img_dir,img_name)
-    flag=1
-    try:
-        frame=cv2.imread(img_path)
-        frameCopy=np.copy(frame)
-        frame,res_str,skeleton_str=parse(frame, frameCopy, img_path)
+    frame=cv2.imread(img_path)
+    frameCopy=np.copy(frame)
+    status,status_desc,frame,res_str,skeleton_str=parse(frame, frameCopy, img_path)
+
+    if status == 'success':
         res_string+=res_str
         skeleton_string+=skeleton_str
         cv2.imwrite(result_dir+'images_visualization/s_'+img_name, frame)
-    except Exception:
-        flag=0
-
-    if flag==1:
         return res_string,skeleton_string
     else:
-        return 'fail',''
+        return 'fail',status_desc
 
