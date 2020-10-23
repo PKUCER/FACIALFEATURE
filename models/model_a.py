@@ -1,9 +1,3 @@
-"""
-This model is Baidu Hand Keypoint Detector API
-APP_ID is 19251377, API_KEY is 'Zune7nva3cS6LcXZoj7lEN9r'
-SECRET_KEY is '1pIzEKLfP3xUQ4UbRpM5ZUwHmsE3eVOd'
-剩余可用量：50000次图片检测，See https://ai.baidu.com/ai-doc/FACE/yk37c1u4t for more details.
-"""
 from __future__ import division
 import cv2
 import time
